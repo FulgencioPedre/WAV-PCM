@@ -80,5 +80,23 @@ bool LoadWav(const string& audio, SoundData& sound){
 
 
 int main(int argc, char* argv[]){
+    if(argc <= 1){
+        cout << "No WAV file inserted in programme" << endl;
+        return 1;
+    }
 
+    SoundData sound;
+    bool isValid = LoadWav(argv[1], sound);
+    if(!isValid){
+        cout << "Something went wrong!" << endl;
+        return 1;
+    }
+
+    cout << "Sample Rates: " << sound.sample_rate << endl;
+    cout << "Channels: " << sound.channels << endl;
+    for(size_t i = 0; (i < 20 && i < sound.samples.size()); i++){
+        cout << sound.samples[i] << endl;
+    }
+
+    return 0;      
 }
