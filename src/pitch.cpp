@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <cmath>
+#include <miniaudio.h>
 
 using namespace std;
 
