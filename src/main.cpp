@@ -6,18 +6,24 @@
 #include <cmath>
 #include <miniaudio.h>
 
-#include "Pitch.h"
+#include "AutoCorrelation.h"
+#include "MicrophoneDetector.h"
+#include "WavLoader.h"
 
 using namespace std;
 
 int main(int argc, char* argv[]){
     if(argc <= 1){
         cout << "No WAV file inserted in programme" << endl;
-        return 1;
+        MicrophoneDetector mic;
+        mic.MicConfig();
     }
+
+    WavLoader wav;
     Pitch pitch;
     SoundData sound;
-    bool isValid = pitch.LoadWav(argv[1], sound);
+
+    bool isValid = wav.LoadWav(argv[1], sound);
     if(!isValid){
         cout << "Something went wrong!" << endl;
         return 1;
@@ -29,7 +35,12 @@ int main(int argc, char* argv[]){
         cout << sound.samples[i] << endl;
     }
 
-    pitch.AutoCorrelation(sound, 500);
+    pitch.AutoCorrelationFiles(sound, 500);
+    
+    MicrophoneDetector mic;
+    mic.MicConfig();
+    
+    
 
     return 0;      
 }

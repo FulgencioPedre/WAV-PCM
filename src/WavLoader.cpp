@@ -6,14 +6,15 @@
 #include <cmath>
 #include <miniaudio.h>
 
-#include "Pitch.h"
+#include "AutoCorrelation.h"
+#include "WavLoader.h"
 
 using namespace std;
 
-const size_t WINDOW_SIZE = 2400;
 
 
-bool Pitch::LoadWav(const string& audio, SoundData& sound){
+
+bool WavLoader::LoadWav(const string& audio, SoundData& sound){
     //Lee el archivo binario y lo guarda en un buffer, siendo este el header que creamos como variable
     ifstream file(audio, ios::binary);
     if(!file.is_open()){
@@ -101,62 +102,3 @@ bool Pitch::LoadWav(const string& audio, SoundData& sound){
     output.close();
     return true;
 }
-
-
-void Pitch::AutoCorrelation(const SoundData &sound, size_t offset){
-    ofstream correlation("correlations.txt");
-
-    size_t windowSize = WINDOW_SIZE;
-    size_t startOffset = 0;
-    if(startOffset + windowSize > sound.samples.size()) return;
-
-    float r;
-    size_t minLag = sound.sample_rate / 500;
-    size_t maxLag = sound.sample_rate / 80;
-
-   while(true){
-    if(startOffset + windowSize > sound.samples.size()){
-        break;
-    }
-    float sum = 0.0f;
-    for(size_t j = 0; j < WINDOW_SIZE; ++j){
-        float sample =  sound.samples[startOffset + j];
-        sum += sample*sample;
-    }
-
-    float timestamp = static_cast<float>(startOffset)/sound.sample_rate;
-    float rms = sqrt(sum/WINDOW_SIZE);
-    if(rms < 0.01f){
-        correlation << timestamp << "\t0.0\t0.0\n";
-        startOffset += offset;
-    }
-    else{
-        float minCorrelation = 1e9f;
-        size_t bestLag = 0;
-
-        for(size_t i = minLag; i <= maxLag; ++i){
-            r = 0.0f;
-            //correlation << "LAG: " << i << " -> ";
-            for(size_t j = 0; j < WINDOW_SIZE - i; ++j){
-                float sample1 =  sound.samples[startOffset + j];
-                float sample2 = sound.samples[startOffset + j + i];
-                float delta = sample1 - sample2;
-                r += delta * delta;
-            }
-            //correlation << i << ": "<< r << '\n';
-
-            if(r < minCorrelation){
-                minCorrelation = r;
-                bestLag = i;
-            }
-        }
-        startOffset += offset;
-        float frequency = static_cast<float>(sound.sample_rate)/bestLag;
-        float midiNote = 69 + (12 * (log2(frequency/440)));
-        correlation << timestamp << '\t' << frequency << '\t' << midiNote << '\n';
-    }
-   }
-
-    correlation.close(); 
-}
-

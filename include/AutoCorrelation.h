@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+using namespace std;
+
 #pragma pack(push, 1) //Evita que haya un padding entre medias de cada dato y byte
 //Representa los datos que hay dentro del HEADER de un archivo WAV
 struct WAVHeader{
@@ -34,9 +36,12 @@ struct SoundData{
     vector<float> samples;
 };
 
+constexpr size_t WINDOW_SIZE = 2400;
+
 class Pitch{
     public:
         bool LoadWav(const string& audio, SoundData& sound);
-        void AutoCorrelation(const SoundData &sound, size_t offset);
+        float AutoCorrelation(const std::vector<float> &samples, uint32_t sampleRate); 
+        void AutoCorrelationFiles(const SoundData &sound, size_t offset);
 };
 
