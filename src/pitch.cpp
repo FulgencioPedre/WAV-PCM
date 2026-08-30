@@ -6,43 +6,14 @@
 #include <cmath>
 #include <miniaudio.h>
 
+#include "Pitch.h"
+
 using namespace std;
 
 const size_t WINDOW_SIZE = 2400;
 
-#pragma pack(push, 1) //Evita que haya un padding entre medias de cada dato y byte
-//Representa los datos que hay dentro del HEADER de un archivo WAV
-struct WAVHeader{
-    char riff[4];
-    uint32_t overall_size;
-    char wave[4];
-};
 
-struct WAVAdditional{
-    uint16_t format_type;
-    uint16_t channels;
-    uint32_t sample_rate;
-    uint32_t byte_rate;
-    uint16_t sample_alignment;
-    uint16_t bits_per_sample;
-};
-
-struct WAVChunk{
-    char id[4];
-    uint32_t size;
-};
-#pragma pack(pop) //Elimina el requisito de evitar padding
-
-
-//Datos que necesitamos para analizar el archivo WAV
-struct SoundData{
-    uint32_t sample_rate = 0;
-    uint16_t channels = 0;
-    vector<float> samples;
-};
-
-
-bool LoadWav(const string& audio, SoundData& sound){
+bool Pitch::LoadWav(const string& audio, SoundData& sound){
     //Lee el archivo binario y lo guarda en un buffer, siendo este el header que creamos como variable
     ifstream file(audio, ios::binary);
     if(!file.is_open()){
@@ -132,7 +103,7 @@ bool LoadWav(const string& audio, SoundData& sound){
 }
 
 
-void AutoCorrelation(const SoundData &sound, size_t offset){
+void Pitch::AutoCorrelation(const SoundData &sound, size_t offset){
     ofstream correlation("correlations.txt");
 
     size_t windowSize = WINDOW_SIZE;
@@ -189,26 +160,3 @@ void AutoCorrelation(const SoundData &sound, size_t offset){
     correlation.close(); 
 }
 
-int main(int argc, char* argv[]){
-    if(argc <= 1){
-        cout << "No WAV file inserted in programme" << endl;
-        return 1;
-    }
-
-    SoundData sound;
-    bool isValid = LoadWav(argv[1], sound);
-    if(!isValid){
-        cout << "Something went wrong!" << endl;
-        return 1;
-    }
-
-    cout << "Sample Rates: " << sound.sample_rate << endl;
-    cout << "Channels: " << sound.channels << endl;
-    for(size_t i = 96000; (i < 96300 && i < sound.samples.size()); i++){
-        cout << sound.samples[i] << endl;
-    }
-
-    AutoCorrelation(sound, 500);
-
-    return 0;      
-}
