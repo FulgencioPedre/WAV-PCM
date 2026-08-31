@@ -65,9 +65,28 @@ For periodic signals, the correct period tends to produce a high correlation val
 
 The next stages of this project will include studying and implementing YIN in order to compare results with the current **SDF Implementation**.
 
+## Real-Time MIDI Note Detection
+After adjusting the autocorrelation algorithm, the next step is to implement it in a way that allows it to work in real time.
+
+We use the **miniaduio** library yo initialize and capture audio from the PC's default microphone directly from our **C++** application.
+
+To achive this, we need a callback function that processes the incoming audio data. The callback receives a buffer containing a variable number of audio frames on each invocation. These samples
+are accumulated in a fixed-size buffer that will later be processed by the autocorrelation algorithm:
+
+`static vector<float> audioBuffer(2400, 0.0f);`
+
+The `2400` samples correspond to the analysis window used by our pitch detection algorithm. Since the number of frames recieved by the callback is not necessarily fixed, the callback is responsible for continuously filling this buiffer with samples from the live audio stream (moving used data to the left and introducing new data from the end of the buffer).
+
+The next step would naturally be to initialize the microphone device using the functions provided by the **miniaudio** library. Once the device is started, miniaudio repeatedly invokes the callback whenever new audio data is available, 
+allowing us to process the microphone input continuously until the main loop is terminated.
+
+## Main APP Structure Quick-Recall 
+**MIC -> miniaudio -> callback(framecount) -> audioBuffer (`WINDOW_SIZE` samples) -> Autocorrelation -> Fundamental frequency -> MIDI Note**
+
+
 ## NEXT STEPS
-The next major step is implementing **real-time frequency and MIDI note detection**.
+The next major step is using the wav file audio analysis to analyze any audio file and try to compare the live-audio feed MIDI notes to the analyzed one.
 
-This will allow the pitch detection system to process microphone input in real time, making it suitable for applications such as the planned _karaoke game_, initially developed using **Unity** Engine.
+This will allow us to finally implement the main mic detection engine to any type of singing game making it suitable for applications such as the planned _karaoke game_, initially developed using **Unity** Engine.
 
-In the longer term. the knowledge and code developed in this project will contribute ti the development of a custom **audio engine**, which could and will be integrated into the proprietary game/graphics engine being developed as part of the [Learn OpenGL](https://github.com/FulgencioPedre/LearnOpenGL) project.
+In the longer term. the knowledge and code developed in this project will contribute to the development of a custom **audio engine**, which could and will be integrated into the proprietary game/graphics engine being developed as part of the [Learn OpenGL](https://github.com/FulgencioPedre/LearnOpenGL) project.
